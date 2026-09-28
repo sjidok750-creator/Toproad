@@ -26,7 +26,7 @@ function level1() {
   for (let i = 0; i < 3; i++) it.push({ type: 'gate', d: 38 + i * 8, x: laneC(L3, 2), w: laneW(L3, 2), op: 'add', v: 10 });
 
   it.push({ type: 'gatePair', d: 76, a: { op: 'mul', v: 2 }, b: { op: 'add', v: 8 } });
-  it.push({ type: 'army', d: 96, x: 0, cols: 9, rows: 6, kind: 'basic', speed: 1.5 });
+  it.push({ type: 'army', d: 96, x: 0, cols: 11, rows: 9, kind: 'basic', speed: 1.9 });
   it.push({ type: 'caption', d: 108, text: '화력 증강' });
   it.push({ type: 'barrel', d: 118, x: -3.4, hp: 18, reward: { kind: 'troops', v: 15 } });
   it.push({ type: 'barrel', d: 118, x: 3.4, hp: 28, reward: { kind: 'weapon', tier: 2 } });
@@ -39,11 +39,11 @@ function level1() {
   for (let i = 0; i < 5; i++) it.push({ type: 'gate', d: 148 + i * 8, x: laneC(L2, 0), w: laneW(L2, 0), op: 'add', v: 3 });
 
   it.push({ type: 'caption', d: 200, text: '전군 돌격' });
-  it.push({ type: 'giant', d: 222, x: 0, hp: 650 });
-  it.push({ type: 'army', d: 226, x: 0, cols: 12, rows: 8, kind: 'mixed', speed: 1.4, shieldRows: 0.25 });
+  it.push({ type: 'giant', d: 222, x: 0, hp: 1400 });
+  it.push({ type: 'army', d: 226, x: 0, cols: 13, rows: 12, kind: 'mixed', speed: 1.6, shieldRows: 0.3 });
   it.push({ type: 'gatePair', d: 256, a: { op: 'add', v: 30 }, b: { op: 'add', v: -40 } });
   it.push({ type: 'barrel', d: 270, x: 0, hp: 60, reward: { kind: 'rate', v: 0.2 } });
-  it.push({ type: 'army', d: 288, x: 0, cols: 10, rows: 7, kind: 'basic', speed: 1.6 });
+  it.push({ type: 'army', d: 286, x: 0, cols: 14, rows: 16, kind: 'mixed', speed: 2.0, shieldRows: 0.35 });
   return { n: 1, theme: themeForLevel(1), startCount: 1, length: 316, items: it, boss: { hp: 5200, summon: 14, summonEvery: 7.5, attackEvery: 3.6 } };
 }
 
@@ -125,12 +125,12 @@ function genLevel(n, startCount) {
     },
     army() {
       if (rng() < 0.5) it.push({ type: 'caption', d: d - 8, text: '전군 돌격' });
-      const total = clamp(est * (0.55 + rng() * 0.3) * hard, 14, 900);
-      const cols = clamp(Math.round(Math.sqrt(total * 1.6)), 6, 15);
+      const total = clamp(est * (1.5 + rng() * 0.8) * hard, 20, 1400);
+      const cols = clamp(Math.round(Math.sqrt(total * 1.2)), 6, 16);
       const rows = Math.max(3, Math.round(total / cols));
       const kind = n <= 2 ? 'basic' : rng() < 0.5 ? 'mixed' : 'basic';
-      it.push({ type: 'army', d, x: 0, cols, rows, kind, speed: 1.4 + rng() * 0.4, shieldRows: 0.3, shieldHp: 2 + Math.floor(n / 5) });
-      est = Math.max(3, est - total * 0.28);
+      it.push({ type: 'army', d, x: 0, cols, rows, kind, speed: 1.7 + rng() * 0.5, shieldRows: 0.3, shieldHp: 2 + Math.floor(n / 5) });
+      est = Math.max(3, est - total * 0.1);
       d += rows * 0.72 + 16;
     },
     barrels() {
@@ -155,9 +155,9 @@ function genLevel(n, startCount) {
     },
     giant() {
       it.push({ type: 'caption', d: d - 10, text: '전군 돌격' });
-      const hp = roundNice(est * dmgPerUnit() * 1.4 * hard);
+      const hp = roundNice(est * dmgPerUnit() * 2.1 * hard);
       it.push({ type: 'giant', d: d + 6, x: 0, hp });
-      const esc = clamp(est * 0.35, 8, 300);
+      const esc = clamp(est * 0.9, 12, 600);
       const cols = clamp(Math.round(Math.sqrt(esc * 1.6)), 6, 14);
       it.push({ type: 'army', d: d + 9, x: 0, cols, rows: Math.max(2, Math.round(esc / cols)), kind: 'mixed', speed: 1.4, shieldRows: 0.4, shieldHp: 2 + Math.floor(n / 5) });
       est *= 0.75;

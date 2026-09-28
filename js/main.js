@@ -223,8 +223,17 @@ async function boot() {
       game.pause(true);
       ui.show('pause', true);
     }
+    // 백그라운드에서는 소리를 멈춘다
+    if (audio.ctx) document.hidden ? audio.ctx.suspend() : audio.ctx.resume();
   });
-  window.addEventListener('pointerdown', () => audio.init(), { passive: true });
+  window.addEventListener(
+    'pointerdown',
+    () => {
+      audio.init();
+      if (game.state === 'menu' && !audio.musicMode) audio.startMusic('menu');
+    },
+    { passive: true }
+  );
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' || e.key === 'p') {
       if (game.state === 'paused') ui.emit('resume');

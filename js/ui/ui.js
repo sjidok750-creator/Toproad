@@ -167,7 +167,19 @@ export class UI {
     $('r-kills').textContent = formatNum(r.kills);
     $('r-max').textContent = formatNum(r.maxCount);
     $('r-count').textContent = formatNum(r.count);
-    $('r-coins').textContent = formatNum(r.earned);
+    // 골드 카운트업
+    const el = $('r-coins');
+    const t0 = performance.now();
+    const dur = 900;
+    cancelAnimationFrame(this.coinAnim);
+    const tick = (now) => {
+      const k = Math.min(1, (now - t0) / dur);
+      el.textContent = formatNum(Math.round(r.earned * (1 - Math.pow(1 - k, 3))));
+      if (k < 1) this.coinAnim = requestAnimationFrame(tick);
+      else if (r.earned > 0) audio.coin();
+    };
+    el.textContent = '0';
+    this.coinAnim = requestAnimationFrame(tick);
     $('btn-next').innerHTML = r.won ? '<span>다음 레벨</span>' : '<span>다시 도전</span>';
     this.show('result', true);
     this.show('hud', false);

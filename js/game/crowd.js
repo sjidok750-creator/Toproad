@@ -96,7 +96,7 @@ export class Crowd {
       list[write++] = s;
       if (s.state === 'dying') {
         s.dieT += dt;
-        s.flash = Math.max(0, s.flash - dt * 6);
+        s.flash = Math.max(0, s.flash - dt * 9);
         s.vy -= 22 * dt;
         s.x += s.vx * dt;
         s.d += s.vd * dt;

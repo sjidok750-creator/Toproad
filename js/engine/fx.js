@@ -1,6 +1,14 @@
 // 이펙트: GPU 빌보드 파티클, 파편 물리, 충격파 링, 떠오르는 숫자, 화면 흔들림/히트스톱/플래시
 import * as THREE from 'three';
-import { softCircleTexture, puffTexture, ringTexture } from '../world/textures.js';
+import { softCircleTexture, puffTexture, ringTexture, makeCanvas, canvasTexture } from '../world/textures.js';
+
+function squareTexture() {
+  const [c, ctx] = makeCanvas(16, 16);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(2, 4, 12, 8);
+  return canvasTexture(c, { srgb: false });
+}
+const CONFETTI = [0xff4d6d, 0xffd23f, 0x3ddc84, 0x4dabff, 0xb57bff, 0xffffff, 0xff8a3d].map((c) => new THREE.Color(c));
 import { rand, noise1, clamp } from './util.js';
 
 const PARTICLE_VS = `
@@ -225,6 +233,7 @@ export class FX {
     this.layer = layer;
     this.glow = new ParticleSystem(scene, { cap: 2500, texture: softCircleTexture() });
     this.smoke = new ParticleSystem(scene, { cap: 900, texture: puffTexture(), blending: THREE.NormalBlending });
+    this.paper = new ParticleSystem(scene, { cap: 500, texture: squareTexture(), blending: THREE.NormalBlending });
     this.rocks = new DebrisSystem(scene, new THREE.DodecahedronGeometry(0.5, 0), 260, { flatShading: true });
     this.planks = new DebrisSystem(scene, new THREE.BoxGeometry(0.22, 0.1, 0.9), 200);
     this.cubes = new DebrisSystem(scene, new THREE.BoxGeometry(0.35, 0.35, 0.35), 200, { roughness: 0.5 });
@@ -302,6 +311,14 @@ export class FX {
     this.dust(x, z, w * 1.2, new THREE.Color(0.9, 0.85, 0.78), 40);
   }
 
+  confetti(x, y, z, n = 120, spread = 6) {
+    for (let i = 0; i < n; i++) {
+      const a = rand(0, Math.PI * 2);
+      const sp = rand(2, spread);
+      this.paper.spawn({ x: x + rand(-1, 1), y, z: z + rand(-1, 1), vx: Math.cos(a) * sp, vy: rand(6, 14), vz: Math.sin(a) * sp * 0.6, life: rand(1.8, 3), size: rand(0.18, 0.3), color: CONFETTI[i % CONFETTI.length], grav: 7, drag: 1.6, vr: rand(-12, 12), floor: 0.02 });
+    }
+  }
+
   // ---------- 떠오르는 숫자 ----------
   text(x, y, z, str, cls = 'dmg', life = 0.9) {
     let el = this.textPool.pop();
@@ -363,6 +380,7 @@ export class FX {
   update(dt, realDt, flashUniform) {
     this.glow.update(dt);
     this.smoke.update(dt);
+    this.paper.update(dt);
     this.rocks.update(dt);
     this.planks.update(dt);
     this.cubes.update(dt);
@@ -406,6 +424,7 @@ export class FX {
   clear() {
     this.glow.clear();
     this.smoke.clear();
+    this.paper.clear();
     this.rocks.clear();
     this.planks.clear();
     this.cubes.clear();

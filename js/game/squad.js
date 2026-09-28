@@ -9,6 +9,7 @@ import { audio } from '../engine/audio.js';
 const MAX_VIS = 200;
 const BLUE = new THREE.Color(0.6, 1.2, 3);
 const BLUE_PUFF = new THREE.Color(0.6, 0.75, 1);
+const MUZZLE = [null, new THREE.Color(0.9, 1.5, 2.6), new THREE.Color(1.6, 2.0, 2.8), new THREE.Color(2.8, 1.2, 0.35)];
 
 export class Squad {
   constructor(game) {
@@ -282,6 +283,8 @@ export class Squad {
           pick.recoil = 1;
         } else this.heroRecoil = 1;
         game.arrows.fire(this.x + ox, this.d - oz + 0.5, power, this.tier);
+        // 시위를 놓는 순간의 작은 섬광
+        game.fx.glow.spawn({ x: this.x + ox, y: 0.8, z: -(this.d - oz + 0.6), life: 0.08, s0: 0.5, s1: 0.2, color: MUZZLE[this.tier] });
         fired++;
       }
       if (fired) audio.shoot(this.tier);

@@ -328,9 +328,24 @@ export class Game {
     this.squad.cheer = true;
     this.ui.bossBar(false);
     audio.stopMusic();
-    setTimeout(() => audio.victory(), 900);
+    this.winFx = 0;
     // 남은 적 소멸
     for (const s of this.crowd.soldiers) if (s.state !== 'dead' && s.state !== 'dying') this.crowd.kill(s, 'trade');
+  }
+
+  // 승리 연출 타임라인 (게임 시간 기준)
+  winSequence() {
+    const sq = this.squad;
+    if (this.winFx === 0 && this.endT > 0.9) {
+      this.winFx = 1;
+      audio.victory();
+    }
+    if (this.winFx === 1 && this.endT > 1.3) {
+      this.winFx = 2;
+      this.fx.confetti(sq.x - 3, 1, -sq.d - 4, 90);
+      this.fx.confetti(sq.x + 3, 1, -sq.d - 4, 90);
+      this.ui.caption('승리!');
+    }
   }
 
   finishRun(won) {
@@ -404,6 +419,7 @@ export class Game {
     this.updateHud();
     if (this.state === 'win' || this.state === 'lose') {
       this.endT += realDt;
+      if (this.state === 'win') this.winSequence();
       if (this.state === 'win' && this.endT > 3.0 && !this.resultShown) {
         this.resultShown = true;
         this.ui.showResult(this.finishRun(true));
