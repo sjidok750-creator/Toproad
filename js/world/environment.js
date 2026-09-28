@@ -233,10 +233,11 @@ export class Environment {
       const tx = th.ground === 'snow' ? snowTextures({ road: false, seed: 5 }) : { map: grassTextures() };
       tx.map.wrapS = tx.map.wrapT = THREE.RepeatWrapping;
       tx.map.repeat.set(120 / 14, len / 14);
-      const mat = this.track(new THREE.MeshStandardMaterial({ map: this.track(tx.map), roughness: 0.95, bumpMap: tx.bump || null, bumpScale: 1.2 }));
-      if (tx.bump) {
-        tx.bump.wrapS = tx.bump.wrapT = THREE.RepeatWrapping;
-        tx.bump.repeat.copy(tx.map.repeat);
+      const mat = this.track(new THREE.MeshStandardMaterial({ map: this.track(tx.map), roughness: 0.95, normalMap: tx.normal || null, normalScale: new THREE.Vector2(0.6, 0.6) }));
+      if (tx.normal) {
+        tx.normal.wrapS = tx.normal.wrapT = THREE.RepeatWrapping;
+        tx.normal.repeat.copy(tx.map.repeat);
+        this.track(tx.normal);
       }
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(120, len).rotateX(-PI / 2), mat);
       ground.position.set(0, -0.03, zc);
@@ -249,13 +250,14 @@ export class Environment {
     if (th.road === 'flagstone') roadTex = flagstoneTextures({ base: th.roadHSL, seed: 7, grass: th.key === 'bridge' });
     else if (th.road === 'snow') roadTex = snowTextures({ road: true, seed: 9 });
     else roadTex = dirtRoadTextures({ seed: 3 });
-    for (const t of [roadTex.map, roadTex.bump]) {
+    for (const t of [roadTex.map, roadTex.normal]) {
       if (!t) continue;
       t.wrapS = t.wrapT = THREE.RepeatWrapping;
       t.repeat.set((HW * 2) / 6.2, len / 6.2);
       this.track(t);
     }
-    const roadMat = this.track(new THREE.MeshStandardMaterial({ map: roadTex.map, bumpMap: roadTex.bump, bumpScale: th.road === 'flagstone' ? 2.2 : 1.2, roughness: th.road === 'snow' ? 0.8 : 0.88 }));
+    const ns = th.road === 'flagstone' ? 1 : 0.6;
+    const roadMat = this.track(new THREE.MeshStandardMaterial({ map: roadTex.map, normalMap: roadTex.normal, normalScale: new THREE.Vector2(ns, ns), roughness: th.road === 'snow' ? 0.8 : 0.88 }));
     const bridge = th.ground === 'water' || th.ground === 'lava';
     if (bridge) {
       const sideTex = brickTexture({ base: th.wallHSL, rows: 4, cols: 2 });

@@ -85,7 +85,8 @@ async function boot() {
   ui.setCoins(state.coins);
   // 셰이더 예열을 위해 한 번 렌더
   game.update(0.016);
-  renderer.render(0.016);
+  // 이 기기에서 후처리가 정상적으로 그려지는지 확인 (검으면 단순한 경로로 전환)
+  renderer.probe();
   ui.loadProgress(1);
   await wait(150);
   ui.hideLoading();
@@ -182,6 +183,7 @@ async function boot() {
   });
   ui.on('quality', (q) => {
     renderer.setQuality(q);
+    renderer.resetPipeline();
     if (renderer.bloom) renderer.bloom.threshold = renderer.bloomThreshold ?? 0.85;
     ui.renderSettings(state, renderer.quality);
   });

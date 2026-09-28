@@ -54,7 +54,33 @@ function speckle(ctx, w, h, n, rng, colorFn) {
   }
 }
 
-// 판석 도로 (다리 테마) — 색상 맵 + 범프 맵
+// 높이 맵(회색조 캔버스)을 타일링 가능한 노멀 맵으로 변환.
+// 범프 맵 셰이더는 일부 모바일 GPU에서 미분값이 0일 때 NaN을 만들어
+// 블룸과 함께 화면 전체를 검게 만들 수 있어 노멀 맵을 쓴다.
+const NORMAL_STRENGTH = 2.2;
+export function heightToNormal(heightCanvas, strength = 2) {
+  const w = heightCanvas.width, h = heightCanvas.height;
+  const src = heightCanvas.getContext('2d').getImageData(0, 0, w, h).data;
+  const [c, ctx] = makeCanvas(w, h);
+  const out = ctx.createImageData(w, h);
+  const H = (x, y) => src[((((y + h) % h) * w + ((x + w) % w)) << 2)] / 255;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const dx = (H(x + 1, y) - H(x - 1, y)) * strength;
+      const dy = (H(x, y + 1) - H(x, y - 1)) * strength;
+      const len = Math.hypot(dx, dy, 1);
+      const i = (y * w + x) << 2;
+      out.data[i] = (-dx / len * 0.5 + 0.5) * 255;
+      out.data[i + 1] = (dy / len * 0.5 + 0.5) * 255;
+      out.data[i + 2] = (1 / len * 0.5 + 0.5) * 255;
+      out.data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+  return canvasTexture(c, { srgb: false });
+}
+
+// 판석 도로 (다리 테마) — 색상 맵 + 노멀 맵
 export function flagstoneTextures({ base = [36, 38, 74], seed = 7, rows = 8, grass = true, size = 512 } = {}) {
   const [c, ctx] = makeCanvas(size, size);
   const [bc, bctx] = makeCanvas(size, size);
@@ -105,7 +131,7 @@ export function flagstoneTextures({ base = [36, 38, 74], seed = 7, rows = 8, gra
     }
   }
   speckle(ctx, size, size, 3000, rng, (r) => `rgba(${r() < 0.5 ? '255,255,255' : '60,50,40'},${0.05 + r() * 0.07})`);
-  return { map: canvasTexture(c), bump: canvasTexture(bc, { srgb: false }) };
+  return { map: canvasTexture(c), normal: heightToNormal(bc, NORMAL_STRENGTH) };
 }
 
 function drawStone(ctx, bctx, x, y, w, h, H, S, L, rng) {
@@ -214,7 +240,7 @@ export function snowTextures({ seed = 11, size = 512, road = true } = {}) {
     }
   }
   speckle(ctx, size, size, 2500, rng, (r) => `rgba(255,255,255,${0.2 + r() * 0.5})`);
-  return { map: canvasTexture(c), bump: canvasTexture(bc, { srgb: false }) };
+  return { map: canvasTexture(c), normal: heightToNormal(bc, NORMAL_STRENGTH) };
 }
 
 // 초원/흙길
@@ -278,7 +304,7 @@ export function dirtRoadTextures({ seed = 31, size = 512 } = {}) {
     bctx.fill();
   }
   speckle(ctx, size, size, 3000, rng, (r) => `rgba(${r() < 0.5 ? '255,240,220' : '80,55,30'},${0.08 + r() * 0.1})`);
-  return { map: canvasTexture(c), bump: canvasTexture(bc, { srgb: false }) };
+  return { map: canvasTexture(c), normal: heightToNormal(bc, NORMAL_STRENGTH) };
 }
 
 // 나무 판자 (바리케이드, 통)
