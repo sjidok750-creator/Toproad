@@ -7,7 +7,7 @@ import { audio } from './engine/audio.js';
 import { UI } from './ui/ui.js';
 import { Game } from './game/game.js';
 import { buildHero } from './world/models.js';
-import { load, save, UPGRADES, upgradeCost } from './save.js';
+import { load, save, clearSave, UPGRADES, upgradeCost } from './save.js';
 import { HW } from './world/environment.js';
 
 const ui = new UI();
@@ -69,7 +69,7 @@ async function boot() {
   const fx = new FX(renderer.scene, renderer.camera, document.getElementById('ftext-layer'));
   const input = new Input(canvas, HW);
   const state = load();
-  const qLevel = +new URLSearchParams(location.search).get('level');
+  const qLevel = +new URLSearchParams(location.search).get('level'); // 테스트용 레벨 지정
   if (qLevel > 0) state.level = qLevel;
   audio.setEnabled(state.sound);
   audio.setMusic(state.music);
@@ -170,7 +170,13 @@ async function boot() {
   ui.on('toggleVibrate', () => {
     state.vibrate = state.vibrate === false;
     fx.haptics = state.vibrate;
-    if (state.vibrate) navigator.vibrate?.(30);
+    if (state.vibrate) {
+      try {
+        navigator.vibrate?.(30);
+      } catch (e) {
+        /* 진동 미지원 환경 */
+      }
+    }
     save(state);
     ui.renderSettings(state, renderer.quality);
   });
@@ -179,9 +185,22 @@ async function boot() {
     if (renderer.bloom) renderer.bloom.threshold = renderer.bloomThreshold ?? 0.85;
     ui.renderSettings(state, renderer.quality);
   });
+  // 초기화는 버튼을 두 번 눌러 확인 (브라우저 확인창 없이)
+  let resetArmed = null;
+  const resetBtn = document.getElementById('btn-reset');
   ui.on('reset', () => {
-    if (!confirm('모든 진행 상황을 초기화할까요?')) return;
-    localStorage.removeItem('toproad.save.v1');
+    if (!resetArmed) {
+      resetBtn.innerHTML = '<span>한 번 더 누르면 초기화</span>';
+      resetBtn.classList.add('danger');
+      resetArmed = setTimeout(() => {
+        resetArmed = null;
+        resetBtn.innerHTML = '<span>진행 초기화</span>';
+        resetBtn.classList.remove('danger');
+      }, 3000);
+      return;
+    }
+    clearTimeout(resetArmed);
+    clearSave();
     location.reload();
   });
   ui.on('pause', () => {

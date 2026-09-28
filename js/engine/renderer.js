@@ -59,7 +59,12 @@ export class Renderer {
     this.fpsSamples = [];
     this.autoQuality = true;
     const forced = new URLSearchParams(location.search).get('q');
-    const saved = forced ?? localStorage.getItem('toproad.quality');
+    let saved = forced;
+    try {
+      saved ??= localStorage.getItem('toproad.quality');
+    } catch (e) {
+      /* 저장소 접근 불가 */
+    }
     this.setQuality(saved != null ? +saved : isMobile ? 1 : 2, false);
     if (saved != null) this.autoQuality = false;
     this.warmup = 90;
@@ -73,7 +78,11 @@ export class Renderer {
     if (q === this.quality) return;
     this.quality = q;
     if (persist) {
-      localStorage.setItem('toproad.quality', q);
+      try {
+        localStorage.setItem('toproad.quality', q);
+      } catch (e) {
+        /* 저장소 접근 불가 */
+      }
       this.autoQuality = false;
     }
     const dpr = window.devicePixelRatio || 1;

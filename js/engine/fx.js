@@ -340,7 +340,11 @@ export class FX {
       const now = performance.now();
       if (now - (this.lastBuzz || 0) > 120) {
         this.lastBuzz = now;
-        navigator.vibrate(Math.round(Math.min(70, amount * 90)));
+        try {
+          navigator.vibrate(Math.round(Math.min(70, amount * 90)));
+        } catch (e) {
+          /* 진동 미지원 환경 */
+        }
       }
     }
   }

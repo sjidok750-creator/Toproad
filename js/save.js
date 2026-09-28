@@ -20,6 +20,14 @@ export function load() {
   return structuredClone(DEFAULT);
 }
 
+export function clearSave() {
+  try {
+    localStorage.removeItem(KEY);
+  } catch (e) {
+    /* 저장소 접근 불가 */
+  }
+}
+
 export function save(state) {
   try {
     localStorage.setItem(KEY, JSON.stringify(state));

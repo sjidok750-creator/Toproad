@@ -161,6 +161,7 @@ html, body {
 .btn.gold { background: linear-gradient(#ffe27a, #ffb625 55%, #f09a10); box-shadow: 0 5px 0 #9a5a00, 0 8px 14px rgba(0,0,0,.3), inset 0 2px 0 rgba(255,255,255,.5); }
 .btn.big { font-size: 30px; padding: 16px 18px 18px; }
 .btn.thin { font-size: 16px; padding: 8px 14px 10px; }
+.btn.danger { background: linear-gradient(#ff8a80, #e5392f 55%, #c42a22); box-shadow: 0 5px 0 #7a1510, 0 8px 14px rgba(0,0,0,.3), inset 0 2px 0 rgba(255,255,255,.45); }
 .btn:disabled { filter: grayscale(.8) brightness(.8); cursor: default; }
 .btn.big.green:not(:disabled) { animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
